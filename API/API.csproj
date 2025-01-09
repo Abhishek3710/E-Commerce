@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+     <!-- Uses the .NET SDK for web applications (ASP.NET Core). -->
+     <PropertyGroup>
+          <TargetFramework>net9.0</TargetFramework>
+          <!-- Targets .NET 9.0 framework. -->
+          <Nullable>enable</Nullable>
+          <!-- Enables nullable reference types for safer code. -->
+          <ImplicitUsings>enable</ImplicitUsings>
+          <!-- Automatically includes common namespaces. -->
+     </PropertyGroup>
+     <ItemGroup>
+       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
+       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0" />
+       <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
+     </ItemGroup>
+</Project>
