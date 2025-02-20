@@ -11,6 +11,7 @@ const sleep = () => new Promise((resolve) => setTimeout(resolve, 1000));
 
 const customBaseQuery = fetchBaseQuery({
   baseUrl: "https://localhost:5001/api",
+  credentials: "include",
 });
 
 type ErrorResponse =| string | { title: string } | { errors: { [key: string]: string[] } };

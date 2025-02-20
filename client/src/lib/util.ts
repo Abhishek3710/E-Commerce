@@ -1,0 +1,1 @@
+export const currancyFormat = (amount: number) => `$${(amount/100).toFixed(2)}`

@@ -13,5 +13,6 @@ namespace API.Data
 
         // Define the DbSet for the Product entity
         public required DbSet<Product> Products { get; set; }
+        public required DbSet<Basket> Baskets { get; set; }
     }
 }
