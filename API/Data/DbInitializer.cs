@@ -1,36 +1,52 @@
 using System;
-using API.Entities; // Importing entities (models) like Product
-using Microsoft.EntityFrameworkCore; // Importing EF Core for migrations and database operations
-
-namespace API.Data; // Namespace containing data-related functionality
+using System.Threading.Tasks;
+using API.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+namespace API.Data;
 
 public class DbInitializer
 {
-    // Method to initialize the database when the application starts
-    public static void InitDb(WebApplication app)
+    public static async Task InitDb(WebApplication app)
     {
-        // Creating a scope for dependency injection (DI) and getting the database context
-        using var scope = app.Services.CreateScope(); // Ensures proper cleanup of resources after use
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>() 
+        using var scope = app.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<StoreContext>()
             ?? throw new InvalidOperationException("failed to retrieve store context");
 
-        // Seed the database with sample data if the Products table is empty
-        SeedData(context);
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>()
+        ?? throw new InvalidOperationException("failed to retrieve user manager");
+
+        await SeedData(context, userManager);
     }
 
-    // Method that seeds the data into the database
-    private static void SeedData(StoreContext context)
+    private static async Task SeedData(StoreContext context, UserManager<User> userManager)
     {
-        // Applying any pending migrations to ensure the database is up-to-date
         context.Database.Migrate();
 
-        // Check if there are any products already in the database; if there are, skip seeding
+        if (!userManager.Users.Any())
+        {
+            var user = new User
+            {
+                UserName = "bob@test.com",
+                Email = "bob@test.com"
+            };
+            await userManager.CreateAsync(user, "Pa$$w0rd");
+            await userManager.AddToRoleAsync(user, "Member");
+
+            var admin = new User
+            {
+                UserName = "admin@test.com",
+                Email = "admin@test.com"
+            };
+            await userManager.CreateAsync(admin, "Pa$$w0rd");
+            await userManager.AddToRolesAsync(admin, ["Member", "Admin"]);
+        }
+
         if (context.Products.Any()) return;
 
-        // Defining a list of Product objects with sample data
         var Products = new List<Product>
         {
-            		new() {
+                    new() {
                     Name = "Angular Speedster Board 2000",
                     Description =
                         "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna.",
@@ -208,14 +224,11 @@ public class DbInitializer
                     Type = "Boots",
                     QuantityInStock = 100
                 },
-                
-                //Additional products can be added here with similar format...
+
         };
 
-        // Adding the defined products to the Products table
         context.Products.AddRange(Products);
 
-        // Saving the changes to the database, committing the insertion of products
         context.SaveChanges();
     }
 }

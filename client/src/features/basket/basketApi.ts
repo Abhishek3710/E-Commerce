@@ -4,7 +4,7 @@ import { Basket, Item } from "../../app/models/basket";
 import { Product } from "../../app/models/product";
 
 const isBasketItem = (product: Product | Item): product is Item => {
-  return (product as Item).quantity !== undefined;  
+  return (product as Item).quantity !== undefined;
   //returns true if product has a quantity property, indicating that product is of type Item.
 };
 
@@ -18,12 +18,11 @@ export const basketApi = createApi({
       providesTags: ["Basket"],
     }),
 
-    addBasketItem: builder.mutation<
-      Basket,
-      { product: Product | Item; quantity: number }
-    >({
+    addBasketItem: builder.mutation< Basket, { product: Product | Item; quantity: number }>({
       query: ({ product, quantity }) => {
-        const productId = isBasketItem(product) ? product.productId : product.id;
+        const productId = isBasketItem(product)
+          ? product.productId
+          : product.id;
         return {
           url: `basket?productId=${productId}&quantity=${quantity}`,
           method: "POST",
@@ -36,21 +35,31 @@ export const basketApi = createApi({
         let isNewBasket = false;
         const patchResult = dispatch(
           basketApi.util.updateQueryData("fetchBasket", undefined, (draft) => {
-            const productId = isBasketItem(product) ? product.productId : product.id;
-            if(!draft?.basketId) isNewBasket = true;
-            if(!isNewBasket){
-              const existingItem = draft.items.find((item) => item.productId == productId);
-              if (existingItem) { existingItem.quantity += quantity;} 
-              else { draft.items.push(isBasketItem(product)? product: {...product, productId:product.id, quantity});}
+            const productId = isBasketItem(product)
+              ? product.productId
+              : product.id;
+            if (!draft?.basketId) isNewBasket = true;
+            if (!isNewBasket) {
+              const existingItem = draft.items.find(
+                (item) => item.productId == productId
+              );
+              if (existingItem) {
+                existingItem.quantity += quantity;
+              } else {
+                draft.items.push(
+                  isBasketItem(product)
+                    ? product
+                    : { ...product, productId: product.id, quantity }
+                );
+              }
             }
           })
         );
         try {
-          if(isNewBasket){
+          if (isNewBasket) {
             await queryFulfilled;
-            dispatch(basketApi.util.invalidateTags(['Basket']));
+            dispatch(basketApi.util.invalidateTags(["Basket"]));
           }
-          
         } catch (er) {
           console.log("Error invalidating tags", er);
           patchResult.undo();
